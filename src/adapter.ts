@@ -59,8 +59,15 @@ export default class SynologyAdapter extends Adapter<Context, SynologyBot> {
         if (!session) return;
         session.setInternal("synologybot", payload);
         bot.dispatch(session);
-        logger.info("Session dispatched:%o ", session);
+        // logger.info("Session dispatched:%o ", session);
         koa.status = 200;
+        //可以直接响应回去
+        // koa.body = {
+        //   token: payload.token,
+        //   channel_id: payload.channel_id,
+        //   channel_name: payload.channel_name,
+        //   text: "收到",
+        // };
       } catch (err) {
         logger.error(err);
         koa.status = 500;

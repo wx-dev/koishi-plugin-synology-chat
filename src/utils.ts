@@ -98,10 +98,29 @@ export const createSession = (bot: SynologyBot, payload: SynologyPayload) => {
  */
 export async function decodeMessage(
   bot: SynologyBot,
-  response: SynologyChatSendMessageResponse,
+  response: SynologyChatSendMessageResponse[],
   message: Universal.Message,
   payload: Universal.MessageLike = message,
 ) {
-  console.log(response);
-  return message;
+  // const res = response[0]
+  // if (!res.success) {
+  //   return
+  // }
+  // const segments: h[] = []
+  // if(res.data==undefined){
+  //   segments.push(h("text",{contenr:"success"}))
+  //   message.elements=segments;
+  //   message.content=segments.join("");
+  //   message.timestamp=Date.now();
+  //   return
+
+  // }
+  // for (const [key, value] of Object.entries(res.data.succ.user_id_post_map)) {
+  //   console.log(`${key}: ${value}`);
+
+  //   segments.push(h("text", { content: res.data.succ.user_id_post_map['4'] }))
+  // }
+
+  // console.log(segments)
+  // return message;
 }

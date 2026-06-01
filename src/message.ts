@@ -2,7 +2,6 @@ import { Dict, h, MessageEncoder,Context } from "@satorijs/core";
 import SynologyBot from "./bot";
 import { SynologyChatSendMessageResponse } from "./types";
 import { decodeMessage } from "./utils";
-import { console } from "inspector";
 export class SynologyMessageEncoder extends MessageEncoder<
   Context,
   SynologyBot
@@ -13,7 +12,7 @@ export class SynologyMessageEncoder extends MessageEncoder<
     this.payload = { channelId: this.channelId, text: "" };
   }
   // 将发送好的消息添加到 results 中
-  async addResult(response: SynologyChatSendMessageResponse) {
+  async addResult(response: SynologyChatSendMessageResponse[]) {
     const session = this.bot.session();
     const message = await decodeMessage(
       this.bot,
@@ -29,7 +28,7 @@ export class SynologyMessageEncoder extends MessageEncoder<
   }
 
   async flush(): Promise<void> {
-    let response: SynologyChatSendMessageResponse | null = null;
+    let response: SynologyChatSendMessageResponse[] | null = null;
     if (this.payload.text) {
       response = await this.bot.internal.sendMessage(this.payload);
     }

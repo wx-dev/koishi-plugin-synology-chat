@@ -57,7 +57,12 @@ export interface SynologyChatErrorResponse extends SynologyChatBaseResponse {
  */
 export interface SynologyChatSendMessageSuccess extends SynologyChatBaseResponse {
   success: true;
-  message_id: number; // 假设返回的是数字类型的消息ID，根据实际情况也可能是 string
+  data?: {
+    fail: string | null,
+    succ: {
+      user_id_post_map: Record<string, string>
+    }
+  }
 }
 
 /**

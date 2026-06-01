@@ -11,7 +11,6 @@ export class Internal {
    * 发送消息给群晖 Chat
    */
   async sendMessage(payload: Dict) {
-    console.log("发送消息", payload);
     const { config, selfId } = this.bot;
     const { channelId, text } = payload;
 
@@ -107,6 +106,7 @@ export class Internal {
           },
         },
       );
+      console.log(res)
       if ("error" in res) {
         const errorCode = res.error.code;
         logger.error(`消息发送失败,错误码: ${errorCode}`, res);
