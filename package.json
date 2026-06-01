@@ -15,8 +15,22 @@
     "koishi",
     "plugin"
   ],
-  "devDependencies": {},
+  "koishi": {
+    "service": {
+      "required": [
+        "server"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@satorijs/core": "^4.6.0",
+    "@koishijs/plugin-server": "^3.2.4",
+    "koishi-plugin-event-server": "^0.0.1",
+    "koishi": "^4.18.7"
+  },
   "peerDependencies": {
+    "@satorijs/core": "^4.6.0",
+    "@koishijs/plugin-server": "^3.2.4",
     "koishi": "^4.18.7"
   }
 }
