@@ -5,7 +5,7 @@ import { SynologyConfig } from "./config";
 import SynologyBot from "./bot";
 
 export const name = "synology-chat";
-export const inject = ["server", "http"];
+export const inject = ["server", "http", "database"];
 // 2. 定义配置 Schema
 export const Config: Schema<SynologyConfig.Config> = Schema.object({
   WebhookOutConfigList: Schema.array(
@@ -60,18 +60,18 @@ export function apply(ctx: Context, config: SynologyConfig.Config) {
   // 监听群晖 Chat 的交互回调事件
   ctx.on("synology/interaction", (session) => {
     console.log("收到交互回调:", session);
-    session.send(`测试${h("at", {
-      id: "4",
-      name: "smile",
-    })}`);
+    session.send(
+      `测试${h("at", {
+        id: "4",
+        name: "smile",
+      })}`,
+    );
   });
   ctx.on("message", (session) => {
     if (session.content === "天王盖地虎") {
-      session.send(
-        h("a", {href: "https://nas.6543212.xyz:5001"}, "NAS")
-      );
+      console.log("天王盖地虎");
+      session.send("宝塔镇河妖");
     }
   });
-  ctx.command('test <message>')
-  .action((_, message) => message)
+  ctx.command("test <message>").action((_, message) => message);
 }

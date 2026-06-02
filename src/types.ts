@@ -25,6 +25,8 @@ export interface SynologyPayload {
     user_id: string;
     username: string;
   };
+  //文件
+  file_name?: string;
 
   // 允许接收其他未知字段
   [key: string]: any;

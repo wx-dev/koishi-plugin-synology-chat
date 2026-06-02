@@ -52,9 +52,22 @@ export const getWebhookOutConfigByChannelId = (
  * 创建会话
  */
 export const createSession = (bot: SynologyBot, payload: SynologyPayload) => {
-  const { user_id, username, text = "", post_id, channel_id, user } = payload;
+  const {
+    user_id,
+    username,
+    text = "",
+    post_id,
+    channel_id,
+    user,
+    file_name,
+    token,
+  } = payload;
 
   const hArray = convertSynologyChatToHArray(text);
+  if (file_name) {
+    let fileSrc = `${bot.config.host}/webapi/entry.cgi?api=SYNO.Chat.External&method=post_file_get&version=2&token=%22${token}%22&post_id=${post_id}`;
+    hArray.push(h("file", { title: file_name, src: fileSrc }));
+  }
   const content = hArray.join("");
 
   const elements = h.parse(content);
