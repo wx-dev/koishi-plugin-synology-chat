@@ -4,7 +4,7 @@ import {
 } from "./utils";
 import SynologyBot from "./bot";
 import { Dict } from "@satorijs/core";
-import { SynologyChatSendMessageResponse } from "./types";
+import { SynologyChatSendMessageResponse, SynologySendPayload } from "./types";
 export class Internal {
   constructor(private bot: SynologyBot) {}
   /**
@@ -12,7 +12,7 @@ export class Internal {
    */
   async sendMessage(payload: Dict) {
     const { config, selfId } = this.bot;
-    const { channelId, text } = payload;
+    const { channelId, text, buttons } = payload;
 
     if (!channelId || !text) {
       this.bot.ctx.logger.error("发送消息失败，缺少 channelId 或 text 字段");
@@ -69,6 +69,16 @@ export class Internal {
       // 发送给频道，直接字符串/数字
       payloadObj["channel_id"] = targetValue;
     }
+    // 如果解析出了按钮，则组装 attachments 字段
+    if (buttons?.length > 0) {
+      payloadObj["attachments"] = [
+        {
+          callback_id: "callback_id_" + Date.now(), // 可选，回调 ID 用于识别交互事件
+          text: "交互操作",
+          actions: buttons,
+        },
+      ];
+    }
 
     // 3. 构建最终的请求参数
     // 群晖 API 要求参数是 form-data 或 x-www-form-urlencoded，且包含一个名为 'payload' 的字段
@@ -92,9 +102,7 @@ export class Internal {
     queryParams.append("token", '"' + token + '"'); // 确保 token 在 URL 参数中
 
     const fullUrl = `${url}?${queryParams.toString()}`;
-
-    console.log(fullUrl);
-
+    logger.info(`payload: %o`, payloadObj);
     try {
       // 4. 发送 POST 请求
       const res = await this.bot.ctx.http.post<SynologyChatSendMessageResponse>(
@@ -106,7 +114,6 @@ export class Internal {
           },
         },
       );
-      console.log(res)
       if ("error" in res) {
         const errorCode = res.error.code;
         logger.error(`消息发送失败,错误码: ${errorCode}`, res);
@@ -133,10 +140,4 @@ export class Internal {
       throw error;
     }
   }
-}
-export interface SynologySendPayload {
-  text: string;
-  user_ids?: number | string[]; // 可选属性
-  channel_id?: number | string; // 可选属性
-  [key: string]: any; // 允许其他任意属性
 }

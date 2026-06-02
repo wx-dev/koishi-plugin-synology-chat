@@ -1,3 +1,11 @@
+import { Context } from "@satorijs/core";
+// 2. 使用 declare module 扩展 Koishi 的 Events 接口
+declare module "@satorijs/core" {
+  interface Events {
+    "synology/interaction"(seesion: Session<Context>): void;
+  }
+}
+
 // 群晖 Chat Webhook 传递过来的原始 Payload 结构
 export interface SynologyPayload {
   token?: string;
@@ -13,6 +21,10 @@ export interface SynologyPayload {
   // 预留：如果是交互事件（如按钮点击），可能会包含 actions 或 callback_id
   actions?: any[];
   callback_id?: string;
+  user?:{
+    user_id: string;
+    username: string;
+  };
 
   // 允许接收其他未知字段
   [key: string]: any;
@@ -23,7 +35,15 @@ export interface SynologySendPayload {
   text: string;
   user_ids?: number | string[]; // 可选属性
   channel_id?: number | string; // 可选属性
-  [key: string]: any;  // 允许其他任意属性
+  [key: string]: any; // 允许其他任意属性
+}
+
+export interface SynologyAction {
+  type: "button";
+  name: string;
+  value: string;
+  text: string;
+  style: "green" | "grey" | "red" | "orange" | "blue" | "teal";
 }
 
 /**
@@ -58,11 +78,11 @@ export interface SynologyChatErrorResponse extends SynologyChatBaseResponse {
 export interface SynologyChatSendMessageSuccess extends SynologyChatBaseResponse {
   success: true;
   data?: {
-    fail: string | null,
+    fail: string | null;
     succ: {
-      user_id_post_map: Record<string, string>
-    }
-  }
+      user_id_post_map: Record<string, string>;
+    };
+  };
 }
 
 /**

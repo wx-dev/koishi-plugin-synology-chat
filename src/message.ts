@@ -1,6 +1,6 @@
-import { Dict, h, MessageEncoder,Context } from "@satorijs/core";
+import { Dict, h, MessageEncoder, Context } from "@satorijs/core";
 import SynologyBot from "./bot";
-import { SynologyChatSendMessageResponse } from "./types";
+import { SynologyChatSendMessageResponse, SynologyAction } from "./types";
 import { decodeMessage } from "./utils";
 export class SynologyMessageEncoder extends MessageEncoder<
   Context,
@@ -9,7 +9,7 @@ export class SynologyMessageEncoder extends MessageEncoder<
   private payload: Dict = {};
   private logger = this.bot.ctx.logger("synologyMessageEncoder");
   async prepare() {
-    this.payload = { channelId: this.channelId, text: "" };
+    this.payload = { channelId: this.channelId, text: "", buttons: [] };
   }
   // 将发送好的消息添加到 results 中
   async addResult(response: SynologyChatSendMessageResponse[]) {
@@ -19,6 +19,7 @@ export class SynologyMessageEncoder extends MessageEncoder<
       response,
       (session.event.message = {}),
       session.event,
+      this.payload,
     );
     session.event._data ??= {};
     session.event._data.message = response;
@@ -64,7 +65,7 @@ export class SynologyMessageEncoder extends MessageEncoder<
       this.payload.text += "```";
       await this.render(children);
       this.payload.text += "```";
-    }else if (type === "quote") {
+    } else if (type === "quote") {
       //引用 <quote> -> 提取纯文本，并在每一行前面加上 >
       // 先递归渲染出内部的纯文本内容
       const textBuffer = [];
@@ -94,7 +95,35 @@ export class SynologyMessageEncoder extends MessageEncoder<
         this.payload.text += "@here"; // 提醒在线的人
       } else if (attrs.id) {
         // 提醒特定用户（群晖通常直接显示为 @用户ID 或 @用户名）
-        this.payload.text += `@u${attrs.id}`;
+        this.payload.text += `@u:${attrs.id}`;
+      }
+    } else if (type === "button") {
+      const { id, text, theme, href, type } = element.attrs;
+
+      // 群晖只支持 button 类型的交互，如果是 link 或 input 类型，这里可以做降级处理或直接忽略
+      if (type !== "action") {
+        this.payload.text += text || "按钮";
+      } else {
+        // 映射 Koishi 的 theme 到群晖的 style
+        // Koishi: primary, secondary, success, warning, danger, info
+        // Synology: green, grey, red, orange, blue, teal
+        const styleMap: Record<string, SynologyAction["style"]> = {
+          success: "green",
+          warning: "orange",
+          danger: "red",
+          info: "blue",
+          primary: "teal",
+          secondary: "grey",
+        };
+        const style = styleMap[theme] || "grey"; // 默认为灰色
+
+        this.payload.buttons.push({
+          type: "button",
+          name: id || `btn_${Date.now()}`, // 对应群晖的 name，优先用 Koishi 的 id
+          value: id || "default_value", // 对应群晖的 value，用于回传识别
+          text: text || "按钮", // 按钮上显示的文字
+          style: style,
+        });
       }
     } else {
       // 10. 其他未明确支持的元素（如图片、表情等），尝试递归处理其子元素

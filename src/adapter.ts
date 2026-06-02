@@ -36,14 +36,6 @@ export default class SynologyAdapter extends Adapter<Context, SynologyBot> {
 
       // 【核心】处理消息分发
       try {
-        //1. 判断是交互事件 (Interactive) 还是普通消息
-        if (payload.actions && Array.isArray(payload.actions)) {
-          logger.info("Received interactive callback: %s", payload.callback_id);
-          this.ctx.emit("synology/interaction",payload);
-          koa.status = 200;
-          return;
-        }
-
         // 2. 提取基础字段
         const { user_id, username, text = "", post_id, channel_id } = payload;
 
@@ -58,6 +50,15 @@ export default class SynologyAdapter extends Adapter<Context, SynologyBot> {
         const session = createSession(bot, payload);
         if (!session) return;
         session.setInternal("synologybot", payload);
+
+        //处理交互回调后直接返回
+        if (payload.actions && Array.isArray(payload.actions)) {
+          logger.info("Received interactive callback: %s", payload.callback_id);
+          this.ctx.emit("synology/interaction", session);
+          koa.status = 200;
+          return;
+        }
+        //处理普通消息触发session
         bot.dispatch(session);
         // logger.info("Session dispatched:%o ", session);
         koa.status = 200;
