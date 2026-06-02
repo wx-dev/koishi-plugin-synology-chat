@@ -1,7 +1,7 @@
 import { SynologyConfig } from "./config";
 import { SynologyPayload } from "./types";
 import SynologyBot from "./bot";
-import { Context, h, Universal, Dict } from "@satorijs/core";
+import { h, Universal, Dict } from "koishi";
 import { SynologyChatSendMessageResponse } from "./types";
 
 /**

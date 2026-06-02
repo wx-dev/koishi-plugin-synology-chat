@@ -3,7 +3,7 @@ import {
   getWebhookOutConfigByChannelId,
 } from "./utils";
 import SynologyBot from "./bot";
-import { Dict } from "@satorijs/core";
+import { Dict } from "koishi";
 import { SynologyChatSendMessageResponse, SynologySendPayload } from "./types";
 export class Internal {
   constructor(private bot: SynologyBot) {}

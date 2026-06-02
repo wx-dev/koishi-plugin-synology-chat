@@ -1,8 +1,8 @@
-import { Context } from "@satorijs/core";
-// 2. 使用 declare module 扩展 Koishi 的 Events 接口
-declare module "@satorijs/core" {
+import { Session, Context } from "koishi";
+
+declare module "koishi" {
   interface Events {
-    "synology/interaction"(seesion: Session<Context>): void;
+    "synology/interaction"(seesion: Session<never, never, Context>): void;
   }
 }
 
@@ -21,7 +21,7 @@ export interface SynologyPayload {
   // 预留：如果是交互事件（如按钮点击），可能会包含 actions 或 callback_id
   actions?: any[];
   callback_id?: string;
-  user?:{
+  user?: {
     user_id: string;
     username: string;
   };

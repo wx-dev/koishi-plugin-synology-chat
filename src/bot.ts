@@ -1,4 +1,4 @@
-import { Bot, Context, Inject } from "@satorijs/core";
+import { Bot, Context} from "koishi";
 import { SynologyConfig } from "./config";
 import SynologyAdapter from "./adapter";
 import { Internal } from "./internal";

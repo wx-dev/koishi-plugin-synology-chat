@@ -1,9 +1,8 @@
-import { Schema, Context, h } from "@satorijs/core";
+import { Schema, Context, h } from "koishi";
 import {} from "@koishijs/plugin-server";
 import {} from "koishi-plugin-event-server";
 import { SynologyConfig } from "./config";
 import SynologyBot from "./bot";
-import { SynologyPayload } from "./types";
 
 export const name = "synology-chat";
 export const inject = ["server", "http"];
@@ -73,4 +72,6 @@ export function apply(ctx: Context, config: SynologyConfig.Config) {
       );
     }
   });
+  ctx.command('test <message>')
+  .action((_, message) => message)
 }

@@ -1,4 +1,4 @@
-import { Adapter, h, Context } from "@satorijs/core";
+import { Adapter,Context } from "koishi";
 import {} from "@cordisjs/plugin-server";
 import SynologyBot from "./bot";
 import { SynologyPayload } from "./types";

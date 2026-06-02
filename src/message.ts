@@ -1,4 +1,4 @@
-import { Dict, h, MessageEncoder, Context } from "@satorijs/core";
+import { Dict, h, MessageEncoder, Context } from "koishi";
 import SynologyBot from "./bot";
 import { SynologyChatSendMessageResponse, SynologyAction } from "./types";
 import { decodeMessage } from "./utils";
