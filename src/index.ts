@@ -61,7 +61,7 @@ export function apply(ctx: Context, config: SynologyConfig.Config) {
   ctx.on("synology/interaction", (session) => {
     console.log("收到交互回调:", session);
     session.send(
-      `测试${h("at", {
+      `测试 ${h("at", {
         id: "4",
         name: "smile",
       })}`,
@@ -70,7 +70,7 @@ export function apply(ctx: Context, config: SynologyConfig.Config) {
   ctx.on("message", (session) => {
     if (session.content === "天王盖地虎") {
       console.log("天王盖地虎");
-      session.send("宝塔镇河妖");
+      session.send(`<text content="是否确认取消？"></text><button id="1" type="action" text="确认" theme="primary"></button><button id="2" type="action" text="取消" theme="danger"></button>`);
     }
   });
   ctx.command("test <message>").action((_, message) => message);

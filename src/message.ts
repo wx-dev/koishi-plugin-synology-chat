@@ -32,6 +32,8 @@ export class SynologyMessageEncoder extends MessageEncoder<
     let response: SynologyChatSendMessageResponse[] | null = null;
     if (this.payload.text) {
       response = await this.bot.internal.sendMessage(this.payload);
+    }else {
+      this.logger.warn("消息内容为空，跳过发送");
     }
     if (response != null) {
       await this.addResult(response);

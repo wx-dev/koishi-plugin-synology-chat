@@ -20,7 +20,6 @@ export class Internal {
     }
 
     const logger = this.bot.ctx.logger;
-    logger.info(`准备发送消息给 ${channelId}: ${text}`);
 
     const webhookInConfig = getWebhookInConfigBySelfId(config, selfId);
     if (webhookInConfig == undefined) {
@@ -102,7 +101,7 @@ export class Internal {
     queryParams.append("token", '"' + token + '"'); // 确保 token 在 URL 参数中
 
     const fullUrl = `${url}?${queryParams.toString()}`;
-    logger.info(`payload: %o`, payloadObj);
+    logger.info(`准备发送Payload: %o`, payloadObj);
     try {
       // 4. 发送 POST 请求
       const res = await this.bot.ctx.http.post<SynologyChatSendMessageResponse>(

@@ -60,13 +60,14 @@ export const createSession = (bot: SynologyBot, payload: SynologyPayload) => {
     channel_id,
     user,
     file_name,
-    token,
   } = payload;
 
   const hArray = convertSynologyChatToHArray(text);
   if (file_name) {
-    let fileSrc = `${bot.config.host}/webapi/entry.cgi?api=SYNO.Chat.External&method=post_file_get&version=2&token=%22${token}%22&post_id=${post_id}`;
-    hArray.push(h("file", { title: file_name, src: fileSrc }));
+    let hElement = convertSynologyChatFileToH(bot, payload);
+    if (hElement) {
+      hArray.push(hElement);
+    }
   }
   const content = hArray.join("");
 
@@ -144,7 +145,6 @@ export async function decodeMessage(
   // 遍历真实的 user_id_post_map，而不是硬编码某个 ID
   const userIdPostMap = responseData.succ.user_id_post_map;
   for (const [userId, postId] of Object.entries(userIdPostMap)) {
-    logger.info(`成功发送给用户 ${userId}，帖子ID: ${postId}`);
     // 这里根据你的业务需求拼接返回的内容，比如显示“发送成功，帖子ID: xxx”
     segments.push(h.text(`发送成功 (用户: ${userId}, 帖子: ${postId})\n`));
   }
@@ -270,4 +270,45 @@ function convertSynologyChatToHArray(text: string): ReturnType<typeof h>[] {
   return result.length === 1 && result[0].type === "p"
     ? result[0].children
     : result;
+}
+
+/**
+ * 将群晖文件转换为h
+ * @param bot
+ * @param payload
+ * @returns
+ */
+export function convertSynologyChatFileToH(
+  bot: SynologyBot,
+  payload: SynologyPayload,
+): h | null {
+  const { post_id, file_name } = payload;
+  const selfId = bot.selfId;
+  //解析文件类型 图片img 视频video 音频audio 其他file
+  let fileType = "file";
+  if (!file_name) return null;
+  if (
+    file_name.endsWith(".png") ||
+    file_name.endsWith(".jpg") ||
+    file_name.endsWith(".jpeg")||
+    file_name.endsWith(".gif")
+  ) {
+    fileType = "img";
+  } else if (
+    file_name.endsWith(".mp4") ||
+    file_name.endsWith(".avi") ||
+    file_name.endsWith(".mov")
+  ) {
+    fileType = "video";
+  } else if (
+    file_name.endsWith(".mp3") ||
+    file_name.endsWith(".wav") ||
+    file_name.endsWith(".ogg")
+  ) {
+    fileType = "audio";
+  }
+  return h(fileType, {
+    src: `http://${bot.ctx.server.host}:${bot.ctx.server.port}/synology/assets/${selfId}/${post_id}`,
+    title: file_name,
+  });
 }

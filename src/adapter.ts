@@ -1,8 +1,12 @@
-import { Adapter,Context } from "koishi";
+import { Adapter, Context } from "koishi";
 import {} from "@cordisjs/plugin-server";
 import SynologyBot from "./bot";
 import { SynologyPayload } from "./types";
-import { getWebhookInConfigByPayload, createSession } from "./utils";
+import {
+  getWebhookInConfigBySelfId,
+  getWebhookInConfigByPayload,
+  createSession,
+} from "./utils";
 
 export default class SynologyAdapter extends Adapter<Context, SynologyBot> {
   static inject = ["server"];
@@ -10,7 +14,7 @@ export default class SynologyAdapter extends Adapter<Context, SynologyBot> {
   async connect(bot: SynologyBot) {
     const logger = bot.ctx.logger("synologyAdapter");
 
-    // 注册 HTTP POST 路由
+    // 注册webhook接收接口
     bot.ctx.server.post("/synology-webhook", async (koa) => {
       const { body } = koa.request;
       let payload: SynologyPayload = body;
@@ -73,6 +77,36 @@ export default class SynologyAdapter extends Adapter<Context, SynologyBot> {
         logger.error(err);
         koa.status = 500;
       }
+    });
+    //注册资源反向代理
+    bot.ctx.server.get("/synology/assets/:self_id/:post_id", async (koa) => {
+      const selfId = koa.params.self_id;
+      const post_id = koa.params.post_id;
+      const webhookInConfig = getWebhookInConfigBySelfId(bot.config, selfId);
+      if (webhookInConfig == undefined) {
+        logger.error("error selfId");
+        throw new Error("error selfId");
+      }
+      let fullUrl = `${bot.config.host}webapi/entry.cgi?api=SYNO.Chat.External&method=post_file_get&version=2&token=%22${webhookInConfig.token}%22&post_id=${post_id}`;
+      const response = await bot.ctx.http.axios(fullUrl, {
+        method: "GET",
+        responseType: "arraybuffer",
+      });
+      //从完整响应中提取数据
+      const bufferData = Buffer.from(response.data);
+      const headers = response.headers;
+      //提取关键头信息
+      const contentType = headers.get("content-type")|| "application/octet-stream";
+      const contentDisposition = headers.get("content-disposition");
+      //设置 Koa 响应
+      koa.status = response.status || 200;
+      koa.type = contentType;
+      // 如果上游有 Content-Disposition，直接透传给浏览器以触发下载
+      if (contentDisposition) {
+        koa.set("Content-Disposition", contentDisposition);
+      }
+      //发送数据
+      koa.body = bufferData;
     });
   }
 
