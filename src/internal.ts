@@ -6,13 +6,13 @@ import SynologyBot from "./bot";
 import { Dict } from "koishi";
 import { SynologyChatSendMessageResponse, SynologySendPayload } from "./types";
 export class Internal {
-  constructor(private bot: SynologyBot) {}
+  constructor(private bot: SynologyBot) { }
   /**
    * 发送消息给群晖 Chat
    */
   async sendMessage(payload: Dict) {
     const { config, selfId } = this.bot;
-    const { channelId, text, buttons } = payload;
+    const { channelId, text, buttons, file_url } = payload;
 
     if (!channelId || !text) {
       this.bot.ctx.logger.error("发送消息失败，缺少 channelId 或 text 字段");
@@ -77,6 +77,9 @@ export class Internal {
           actions: buttons,
         },
       ];
+    }
+    if (file_url != "") {
+      payloadObj["file_url"] = file_url;
     }
 
     // 3. 构建最终的请求参数

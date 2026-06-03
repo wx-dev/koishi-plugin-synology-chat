@@ -9,7 +9,7 @@ export class SynologyMessageEncoder extends MessageEncoder<
   private payload: Dict = {};
   private logger = this.bot.ctx.logger("synologyMessageEncoder");
   async prepare() {
-    this.payload = { channelId: this.channelId, text: "", buttons: [] };
+    this.payload = { channelId: this.channelId, text: "", buttons: [], fileUrls: [], file_url: "" };
   }
   // 将发送好的消息添加到 results 中
   async addResult(response: SynologyChatSendMessageResponse[]) {
@@ -30,18 +30,35 @@ export class SynologyMessageEncoder extends MessageEncoder<
 
   async flush(): Promise<void> {
     let response: SynologyChatSendMessageResponse[] | null = null;
-    if (this.payload.text) {
-      response = await this.bot.internal.sendMessage(this.payload);
-    }else {
-      this.logger.warn("消息内容为空，跳过发送");
+    //有文件分批发送
+    if (this.payload.fileUrls.length > 0) {
+      for (const file_url of this.payload.fileUrls) {
+        this.payload.file_url=file_url;
+        response = await this.bot.internal.sendMessage(this.payload);
+        if (response != null) {
+          await this.addResult(response);
+        }
+      }
+    } else {
+      //没有文件直接发送
+      if (this.payload.text) {
+        response = await this.bot.internal.sendMessage(this.payload);
+      } else {
+        this.logger.warn("消息内容为空，跳过发送");
+      }
+      if (response != null) {
+        await this.addResult(response);
+      }
+
     }
-    if (response != null) {
-      await this.addResult(response);
-    }
+
     this.payload.text = "";
+    this.payload.buttons = [];
+    this.payload.fileUrls = [];
   }
   // 遍历并翻译 Koishi 的标准消息元素
   async visit(element: h) {
+    console.log(element)
     const { type, attrs, children } = element;
     if (type === "text") {
       //纯文本处理：群晖的 Markdown 需要对 * _ ~ ` [ ] ( ) 等特殊符号进行转义
@@ -99,7 +116,10 @@ export class SynologyMessageEncoder extends MessageEncoder<
         // 提醒特定用户（群晖通常直接显示为 @用户ID 或 @用户名）
         this.payload.text += `@u:${attrs.id}`;
       }
-    } else if (type === "button") {
+    } else if (type === "image") {
+      this.payload.fileUrls.push(attrs.url);
+    }
+    else if (type === "button") {
       const { id, text, theme, href, type } = element.attrs;
 
       // 群晖只支持 button 类型的交互，如果是 link 或 input 类型，这里可以做降级处理或直接忽略
